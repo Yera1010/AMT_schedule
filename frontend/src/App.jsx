@@ -44,7 +44,7 @@ function ScheduleColumn({ title, placeholder, searchTerm, onSearchTermChange, op
     if (!text || !text.trim()) return
     setLoading(true)
     try {
-      const res = await fetch('https://amt-schedule.onrender.com', {
+      const res = await fetch('https://amt-schedule.vercel.app/process-schedule', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }),
       })
       const data = await res.json()
@@ -56,7 +56,7 @@ function ScheduleColumn({ title, placeholder, searchTerm, onSearchTermChange, op
   const handleDeleteLesson = async (lessonId) => {
     if (!confirm('Удалить урок?')) return;
     try {
-      await fetch(`http://127.0.0.1:8000/delete-lesson/${lessonId}`, { method: 'DELETE' });
+      await fetch(`https://amt-schedule.vercel.app/delete-lesson/${lessonId}`, { method: 'DELETE' });
       handleSearch(null, searchTerm);
     } catch (e) { alert('Ошибка соединения'); }
   }
@@ -149,7 +149,7 @@ function DailyView({ openModal, refreshKey }) {
   const printRef = useRef(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/get-daily-schedule', {
+    fetch('https://amt-schedule.vercel.app/get-daily-schedule', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ day_idx: dayIdx })
     })
@@ -168,8 +168,8 @@ function DailyView({ openModal, refreshKey }) {
 
   const handleDelete = async (id) => {
     if(!confirm("Удалить урок?")) return;
-    await fetch(`http://127.0.0.1:8000/delete-lesson/${id}`, { method: 'DELETE' });
-    const res = await fetch('http://127.0.0.1:8000/get-daily-schedule', {
+    await fetch(`https://amt-schedule.vercel.app/delete-lesson/${id}`, { method: 'DELETE' });
+    const res = await fetch('https://amt-schedule.vercel.app/get-daily-schedule', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ day_idx: dayIdx })
     });
@@ -297,7 +297,7 @@ function App() {
   const handleSaveManual = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://127.0.0.1:8000/add-lesson-manual', {
+      const res = await fetch('https://amt-schedule.vercel.app/add-lesson-manual', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           teacher: modalData.teacher, student: modalData.student, subject: modalData.subject,
@@ -315,7 +315,7 @@ function App() {
   const handleFileChange = async (event) => {
       const files = event.target.files; if (!files.length) return; setUploading(true);
       const formData = new FormData(); for (let i = 0; i < files.length; i++) formData.append('files', files[i]);
-      try { await fetch('http://127.0.0.1:8000/upload', { method: 'POST', body: formData }); alert('Загружено!'); } 
+      try { await fetch('https://amt-schedule.vercel.app/upload', { method: 'POST', body: formData }); alert('Загружено!'); } 
       catch { alert('Ошибка'); } finally { setUploading(false); }
   }
 

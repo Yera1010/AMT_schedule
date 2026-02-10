@@ -1,0 +1,655 @@
+/* 1. СБРОС ВСЕХ ОТСТУПОВ */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Блокируем скролл всей страницы, скроллим только таблицы */
+  background-color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* 2. ГЛАВНЫЙ КОНТЕЙНЕР */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  max-width: none !important; /* ВАЖНО: Убираем ограничения ширины */
+  margin: 0 !important;      /* ВАЖНО: Убираем центрирование */
+}
+
+/* 3. ВЕРХНЯЯ ШАПКА (Фиксированная высота) */
+.top-bar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0; /* Чтобы шапка не сжималась */
+  z-index: 20;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #4f46e5;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.upload-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 4. ОБЛАСТЬ С ТАБЛИЦАМИ (Занимает всё оставшееся место) */
+.split-view {
+  display: flex;
+  flex: 1; /* Растягивается на всю высоту */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 5. КОЛОНКА (Левая и Правая) */
+.schedule-column {
+  flex: 1; /* Делит экран ровно пополам (50% / 50%) */
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
+  background: #ffffff;
+  min-width: 0; /* Магия CSS: не дает таблице распирать флекс-контейнер */
+}
+
+.schedule-column:last-child {
+  border-right: none;
+}
+
+/* Шапка колонки (Поиск) */
+.column-header {
+  padding: 10px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.column-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.mini-search {
+  display: flex;
+  gap: 5px;
+}
+
+.mini-search input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.mini-search button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 0 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Контент (Сама таблица) - Скроллится ВНУТРИ колонки */
+.column-content {
+  flex: 1;
+  overflow: auto; /* Включает скролл, если таблица длинная */
+  position: relative;
+}
+
+/* 6. ТАБЛИЦА (EXCEL STYLE) */
+.table-wrapper {
+  min-width: 100%; /* Растягиваем на всю ширину колонки */
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: separate; /* Нужно для фиксации заголовков */
+  border-spacing: 0;
+  font-size: 0.8rem;
+}
+
+/* Фиксация заголовков (Sticky Headers) */
+.excel-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  z-index: 10;
+  padding: 8px;
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #e2e8f0;
+  color: #475569;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.corner-cell {
+  position: sticky;
+  left: 0;
+  z-index: 11 !important; /* Угол поверх всего */
+  background: #e2e8f0 !important;
+}
+
+.time-col {
+  position: sticky;
+  left: 0;
+  background: #f8fafc;
+  z-index: 5;
+  border-right: 2px solid #e2e8f0;
+  font-weight: bold;
+  color: #94a3b8;
+  width: 50px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.excel-table td {
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+  height: 40px;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0;
+  width: 14%; /* 7 дней недели делим поровну */
+}
+
+/* Стили ячеек */
+.cell-free:hover {
+  background-color: #f0fdf4;
+}
+
+.cell-busy {
+  background-color: #e0e7ff;
+  border-left: 3px solid #4f46e5;
+  padding: 2px;
+}
+
+.subj {
+  font-weight: bold;
+  color: #312e81;
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+/* --- СТИЛИ ДЛЯ ЭКСПОРТА --- */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.export-btn {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.export-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Заголовок, который виден ТОЛЬКО на картинке/в таблице */
+.print-header {
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  padding: 15px;
+  color: #1e293b;
+  background: white;
+  border-bottom: 2px solid #e2e8f0;
+}
+.partic {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+/* Сообщение об ошибке/успехе */
+.message-card {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.message-card.success { background: #dcfce7; color: #166534; }
+.message-card.conflict { background: #fee2e2; color: #991b1b; }
+/* Дополнительный стиль для времени внутри блока */
+.duration-badge {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* Улучшаем вид занятой ячейки, чтобы она была как "карточка" */
+.cell-busy {
+  vertical-align: top !important; /* Текст начинается сверху */
+  padding: 6px !important;
+  border-radius: 4px; /* Скругленные углы блока */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background-clip: padding-box; /* Чтобы border не наезжал */
+  transition: transform 0.1s;
+}
+
+.cell-busy:hover {
+  transform: scale(1.02);
+  z-index: 2; /* При наведении блок всплывает */
+}
+/* --- КНОПКА УДАЛЕНИЯ --- */
+.lesson-info {
+  position: relative; /* Чтобы кнопка позиционировалась внутри блока */
+}
+
+.delete-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: 0; /* Скрыта по умолчанию */
+  transition: opacity 0.2s, color 0.2s;
+}
+
+/* Показываем кнопку только когда наводим мышку на урок */
+.cell-busy:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ef4444; /* Красный при наведении на крестик */
+}
+/* --- ОСНОВНЫЕ СТИЛИ --- */
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
+
+.app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+
+/* --- ШАПКА --- */
+.top-bar {
+  height: 60px; background: white; border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 20;
+}
+.logo { font-size: 1.2rem; font-weight: 800; color: #4f46e5; }
+
+/* Переключатель цели */
+.target-selector {
+  display: flex; gap: 8px; align-items: center; font-size: 0.9rem; color: #64748b;
+}
+.target-selector button {
+  background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+}
+.target-selector button.active {
+  background: #e0e7ff; color: #4f46e5; border-color: #4f46e5; font-weight: 600;
+}
+
+.upload-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+/* --- ГЛАВНЫЙ ЛЕЙАУТ (Sidebar + SplitView) --- */
+.main-layout {
+  display: flex; flex: 1; height: calc(100vh - 60px); width: 100%;
+}
+
+/* --- БОКОВОЕ МЕНЮ --- */
+.sidebar {
+  width: 200px; /* Ширина меню */
+  background: white; border-right: 1px solid #e2e8f0;
+  overflow-y: auto; display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+.sidebar-section { padding: 10px; }
+.sidebar-section h4 { margin: 10px 0 5px 10px; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar li {
+  padding: 8px 12px; margin-bottom: 2px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #334155;
+}
+.sidebar li:hover { background: #f1f5f9; color: #0f172a; }
+
+/* --- ОБЛАСТЬ ТАБЛИЦ --- */
+.split-view {
+  display: flex; flex: 1; overflow: hidden;
+}
+.schedule-column {
+  flex: 1; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; background: white; min-width: 0;
+}
+.column-header { padding: 10px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.column-header h3 { margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #64748b; }
+.mini-search { display: flex; gap: 5px; }
+.mini-search input { flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
+.mini-search button { background: #4f46e5; color: white; border: none; padding: 0 10px; border-radius: 4px; cursor: pointer; }
+
+/* --- ТАБЛИЦА --- */
+.column-content { flex: 1; overflow: auto; position: relative; }
+.table-wrapper { width: 100%; }
+.excel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
+.excel-table th { position: sticky; top: 0; background: #f1f5f9; z-index: 10; padding: 6px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #e2e8f0; font-size: 0.7rem; color: #475569; }
+.corner-cell { position: sticky; left: 0; z-index: 11 !important; background: #e2e8f0 !important; }
+.time-col { position: sticky; left: 0; background: #f8fafc; z-index: 5; border-right: 2px solid #e2e8f0; font-weight: bold; color: #94a3b8; width: 45px; text-align: center; font-size: 0.7rem; }
+.excel-table td { border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; height: 35px; vertical-align: middle; text-align: center; padding: 0; width: 14%; }
+
+/* БЛОКИ */
+.cell-busy { vertical-align: top !important; padding: 4px !important; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background-clip: padding-box; transition: transform 0.1s; cursor: default; }
+.cell-busy:hover { transform: scale(1.02); z-index: 2; }
+.lesson-info { position: relative; }
+.subj { font-weight: bold; font-size: 0.65rem; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.partic { font-size: 0.6rem; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duration-badge { font-size: 0.55rem; opacity: 0.7; margin-top: 1px; }
+
+/* КНОПКА УДАЛЕНИЯ */
+.delete-btn { position: absolute; top: -4px; right: -4px; background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; opacity: 0; }
+.cell-busy:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { color: #ef4444; }
+/* --- ОСНОВНЫЕ СТИЛИ --- */
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #f8fafc; font-family: 'Inter', sans-serif; }
+
+.app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+
+/* --- ШАПКА --- */
+.top-bar {
+  height: 60px; background: white; border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 20;
+}
+
+.left-section { display: flex; align-items: center; gap: 15px; }
+
+/* КНОПКА МЕНЮ */
+.menu-toggle-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.menu-toggle-btn:hover { background: #f1f5f9; color: #4f46e5; }
+
+.logo { font-size: 1.2rem; font-weight: 800; color: #4f46e5; }
+
+.target-selector { display: flex; gap: 8px; align-items: center; font-size: 0.9rem; color: #64748b; }
+.target-selector button { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.target-selector button.active { background: #e0e7ff; color: #4f46e5; border-color: #4f46e5; font-weight: 600; }
+
+.upload-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+/* --- ГЛАВНЫЙ ЛЕЙАУТ --- */
+.main-layout { display: flex; flex: 1; height: calc(100vh - 60px); width: 100%; overflow: hidden; }
+
+/* --- SIDEBAR С АНИМАЦИЕЙ --- */
+.sidebar {
+  background: white; border-right: 1px solid #e2e8f0;
+  overflow-y: auto; display: flex; flex-direction: column;
+  flex-shrink: 0;
+  /* Плавная анимация ширины */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap; /* Чтобы текст не прыгал при сужении */
+}
+
+/* Состояния Sidebar */
+.sidebar.open { width: 220px; }
+.sidebar.closed { width: 0; border: none; }
+
+.sidebar-section { padding: 10px; }
+.sidebar-section h4 { margin: 10px 0 5px 10px; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar li { padding: 8px 12px; margin-bottom: 2px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #334155; }
+.sidebar li:hover { background: #f1f5f9; color: #0f172a; }
+
+/* --- ТАБЛИЦЫ --- */
+.split-view { display: flex; flex: 1; overflow: hidden; transition: width 0.3s; }
+.schedule-column { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; background: white; min-width: 0; }
+.column-header { padding: 10px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.column-header h3 { margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; color: #64748b; }
+.mini-search { display: flex; gap: 5px; }
+.mini-search input { flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
+.mini-search button { background: #4f46e5; color: white; border: none; padding: 0 10px; border-radius: 4px; cursor: pointer; }
+
+.column-content { flex: 1; overflow: auto; position: relative; }
+.table-wrapper { width: 100%; }
+.excel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
+.excel-table th { position: sticky; top: 0; background: #f1f5f9; z-index: 10; padding: 6px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #e2e8f0; font-size: 0.7rem; color: #475569; }
+.corner-cell { position: sticky; left: 0; z-index: 11 !important; background: #e2e8f0 !important; }
+.time-col { position: sticky; left: 0; background: #f8fafc; z-index: 5; border-right: 2px solid #e2e8f0; font-weight: bold; color: #94a3b8; width: 45px; text-align: center; font-size: 0.7rem; }
+.excel-table td { border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; height: 35px; vertical-align: middle; text-align: center; padding: 0; width: 14%; }
+
+/* БЛОКИ */
+.cell-busy { vertical-align: top !important; padding: 4px !important; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background-clip: padding-box; transition: transform 0.1s; cursor: default; }
+.cell-busy:hover { transform: scale(1.02); z-index: 2; }
+.lesson-info { position: relative; }
+.subj { font-weight: bold; font-size: 0.65rem; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.partic { font-size: 0.6rem; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duration-badge { font-size: 0.55rem; opacity: 0.7; margin-top: 1px; }
+
+/* УДАЛЕНИЕ */
+.delete-btn { position: absolute; top: -4px; right: -4px; background: transparent; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; opacity: 0; }
+.cell-busy:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { color: #ef4444; }
+
+/* --- СТИЛИ ДЛЯ ПУСТЫХ ЯЧЕЕК (HOVER) --- */
+.cell-free {
+  cursor: pointer;
+  position: relative;
+}
+.cell-free:hover {
+  background-color: #f0fdf4; /* Светло-зеленый */
+}
+.add-hint {
+  display: none;
+  font-size: 1.2rem;
+  color: #10b981;
+  font-weight: bold;
+}
+.cell-free:hover .add-hint {
+  display: block; /* Показываем плюсик при наведении */
+}
+
+/* --- МОДАЛЬНОЕ ОКНО --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px); /* Размытие фона для красоты */
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 16px; /* Чуть более круглые углы */
+  
+  /* 👇 БЫЛО 320px, СТАЛО 500px */
+  width: 500px; 
+  max-width: 90vw; /* Чтобы на телефонах не вылезало */
+  
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Больше отступ между полями */
+}
+
+.modal-content h3 { 
+  margin-top: 0; 
+  color: #1e293b; 
+  font-size: 1.25rem; 
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+/* Строка в форме (чтобы Учитель и Кабинет стояли свободно) */
+.form-row {
+  display: flex;
+  gap: 15px; /* Больше воздуха между колонками */
+  margin-bottom: 5px;
+}
+
+.modal-content label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  display: block; /* Гарантирует, что label будет над input */
+}
+
+.modal-content input, .modal-content select {
+  width: 100%; /* Растягиваем на всю доступную ширину */
+  padding: 10px; /* Чуть больше поле для ввода */
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #f8fafc;
+  transition: border-color 0.2s;
+}
+
+.modal-content input:focus, .modal-content select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background-color: #fff;
+}
+һ
+
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.modal-actions button[type="button"] { background: #f1f5f9; color: #475569; }
+.save-btn { background: #4f46e5; color: white; }
+.save-btn:hover { background: #4338ca; }
+
+.app-logo {
+  height: 40px; /* Высота под размер шапки */
+  width: auto;  /* Ширина подстроится автоматически */
+  margin-left: 10px;
+  object-fit: contain;
+}
+/* Бейджик с номером кабинета */
+.room-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 1px 4px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #334155;
+}
+
+/* Строка в форме (чтобы Учитель и Кабинет были в ряд) */
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+/* --- СТИЛИ ДЛЯ ПУСТЫХ ЯЧЕЕК (HOVER) --- */
+.cell-free {
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.cell-free:hover {
+  background-color: #f0fdf4; /* Нежно-зеленый фон при наведении */
+}
+
+.add-hint {
+  display: none; /* 👈 СКРЫТО ПО УМОЛЧАНИЮ */
+  font-size: 1.5rem;
+  color: #16a34a; /* Зеленый цвет */
+  font-weight: bold;
+  text-align: center;
+  line-height: 100%;
+  height: 100%;
+  
+  /* Центрируем плюсик */
+  display: none; 
+  align-items: center;
+  justify-content: center;
+}
+
+/* 👇 ПОКАЗЫВАЕМ ТОЛЬКО ПРИ НАВЕДЕНИИ НА РОДИТЕЛЯ (.cell-free) */
+.cell-free:hover .add-hint {
+  display: flex; 
+}
+/* Кнопки переключения дней в DailyView */
+.daily-controls {
+  display: flex;
+  gap: 1px;
+  background: #e2e8f0;
+  border-bottom: 1px solid #cbd5e1;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+.day-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: #f8fafc;
+  cursor: pointer;
+  font-weight: 600;
+  color: #64748b;
+  transition: background 0.2s;
+}
+.day-btn:hover { background: #f1f5f9; }
+.day-btn.active {
+  background: #fff;
+  color: #f97316; /* Оранжевый */
+  border-bottom: 3px solid #f97316;
+}

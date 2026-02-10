@@ -44,7 +44,7 @@ function ScheduleColumn({ title, placeholder, searchTerm, onSearchTermChange, op
     if (!text || !text.trim()) return
     setLoading(true)
     try {
-      const res = await fetch('http://127.0.0.1:8000/process-schedule', {
+      const res = await fetch('https://amt-schedule.onrender.com', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }),
       })
       const data = await res.json()
